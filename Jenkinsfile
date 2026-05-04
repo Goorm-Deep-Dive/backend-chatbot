@@ -60,7 +60,7 @@ pipeline {
                                         docker run -d \
                                           --name chatbot-app \
                                           --restart unless-stopped \
-                                          -p 8082:8080 \
+                                          -p 8082:8082 \
                                           -v /home/ubuntu/chatbot/application.yml:/app/application.yml:ro \
                                           chatbot-app:latest \
                                           --spring.config.location=file:/app/application.yml
