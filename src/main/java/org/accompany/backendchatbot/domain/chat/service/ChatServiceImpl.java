@@ -7,6 +7,11 @@ import org.accompany.backendchatbot.domain.chat.dto.request.AiChatReq;
 import org.accompany.backendchatbot.domain.chat.dto.response.ChatRes;
 import org.accompany.backendchatbot.domain.chat.prompt.ChatPromptBuilder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+
+import java.io.IOException;
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
 @Service
@@ -34,6 +39,58 @@ public class ChatServiceImpl implements ChatService {
         log.info("[Chat] 답변 생성 완료 - userId={}", request.userId());
 
         return new ChatRes(answer);
+    }
+
+    @Override
+    public SseEmitter streamChat(AiChatReq request) {
+        SseEmitter emitter = new SseEmitter(60_000L);
+        String requestId = UUID.randomUUID().toString().substring(0, 8);
+
+        log.info("[Chat:SSE] 스트리밍 요청 시작 - requestId={}, userId={}",
+                requestId, request.userId());
+
+        Thread.ofVirtual().start(() -> {
+            AtomicInteger tokenCount = new AtomicInteger();
+
+            String systemPrompt = chatPromptBuilder.buildSystemPrompt(request);
+            String userPrompt = chatPromptBuilder.buildUserPrompt(request);
+
+            aiClient.stream(systemPrompt, userPrompt)
+                    .doOnNext(token -> {
+                        tokenCount.incrementAndGet();
+
+                        try {
+                            emitter.send(SseEmitter.event().data(token));
+                        } catch (IOException e) {
+                            log.warn("[Chat:SSE] 클라이언트 연결 종료 - requestId={}, tokenCount={}",
+                                    requestId, tokenCount.get());
+                            emitter.complete();
+                        }
+                    })
+                    .doOnComplete(() -> {
+                        log.info("[Chat:SSE] 스트리밍 정상 완료 - requestId={}, tokenCount={}",
+                                requestId, tokenCount.get());
+                        emitter.complete();
+                    })
+                    .doOnError(e -> {
+                        log.error("[Chat:SSE] 스트리밍 실패 - requestId={}, tokenCount={}, error={}",
+                                requestId, tokenCount.get(), e.getMessage(), e);
+                        emitter.completeWithError(e);
+                    })
+                    .blockLast();
+        });
+
+        emitter.onTimeout(() -> {
+            log.warn("[Chat:SSE] 타임아웃 발생 - requestId={}, userId={}",
+                    requestId, request.userId());
+            emitter.complete();
+        });
+
+        emitter.onCompletion(() ->
+                log.info("[Chat:SSE] Emitter 종료 - requestId={}", requestId)
+        );
+
+        return emitter;
     }
 
 }
