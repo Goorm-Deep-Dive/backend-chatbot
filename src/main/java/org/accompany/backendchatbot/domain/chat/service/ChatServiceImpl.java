@@ -52,32 +52,30 @@ public class ChatServiceImpl implements ChatService {
         Thread.ofVirtual().start(() -> {
             AtomicInteger tokenCount = new AtomicInteger();
 
-            String systemPrompt = chatPromptBuilder.buildSystemPrompt(request);
-            String userPrompt = chatPromptBuilder.buildUserPrompt(request);
+            try {
+                String systemPrompt = chatPromptBuilder.buildSystemPrompt(request);
+                String userPrompt = chatPromptBuilder.buildUserPrompt(request);
 
-            aiClient.stream(systemPrompt, userPrompt)
-                    .doOnNext(token -> {
-                        tokenCount.incrementAndGet();
+                for (String token : aiClient.stream(systemPrompt, userPrompt).toIterable()) {
+                    tokenCount.incrementAndGet();
+                    emitter.send(SseEmitter.event().data(token));
+                }
 
-                        try {
-                            emitter.send(SseEmitter.event().data(token));
-                        } catch (IOException e) {
-                            log.warn("[Chat:SSE] 클라이언트 연결 종료 - requestId={}, tokenCount={}",
-                                    requestId, tokenCount.get());
-                            emitter.complete();
-                        }
-                    })
-                    .doOnComplete(() -> {
-                        log.info("[Chat:SSE] 스트리밍 정상 완료 - requestId={}, tokenCount={}",
-                                requestId, tokenCount.get());
-                        emitter.complete();
-                    })
-                    .doOnError(e -> {
-                        log.error("[Chat:SSE] 스트리밍 실패 - requestId={}, tokenCount={}, error={}",
-                                requestId, tokenCount.get(), e.getMessage(), e);
-                        emitter.completeWithError(e);
-                    })
-                    .blockLast();
+                log.info("[Chat:SSE] 스트리밍 정상 완료 - requestId={}, tokenCount={}",
+                        requestId, tokenCount.get());
+
+                emitter.complete();
+
+            } catch (IOException e) {
+                log.warn("[Chat:SSE] 클라이언트 연결 종료 - requestId={}, tokenCount={}",
+                        requestId, tokenCount.get());
+                emitter.complete();
+
+            } catch (Exception e) {
+                log.error("[Chat:SSE] 스트리밍 실패 - requestId={}, tokenCount={}, error={}",
+                        requestId, tokenCount.get(), e.getMessage(), e);
+                emitter.completeWithError(e);
+            }
         });
 
         emitter.onTimeout(() -> {
@@ -85,10 +83,6 @@ public class ChatServiceImpl implements ChatService {
                     requestId, request.userId());
             emitter.complete();
         });
-
-        emitter.onCompletion(() ->
-                log.info("[Chat:SSE] Emitter 종료 - requestId={}", requestId)
-        );
 
         return emitter;
     }
