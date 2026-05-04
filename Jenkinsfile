@@ -4,7 +4,7 @@ pipeline {
     environment {
         IMAGE_NAME = 'chatbot-app'
         CONTAINER_NAME = 'chatbot-app'
-        HEALTH_CHECK_URL = 'http://3.35.195.62:8082/actuator/health'
+        HEALTH_CHECK_URL = 'http://13.125.47.3:8082/actuator/health'
     }
 
     stages {
