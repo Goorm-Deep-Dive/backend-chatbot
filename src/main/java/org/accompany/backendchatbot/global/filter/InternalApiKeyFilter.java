@@ -29,6 +29,13 @@ public class InternalApiKeyFilter extends OncePerRequestFilter {
             FilterChain filterChain
     ) throws ServletException, IOException {
 
+        String path = request.getRequestURI();
+
+        if (path.startsWith("/actuator/health")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         String apiKey = request.getHeader("X-Internal-API-Key");
 
         if (!internalApiKey.equals(apiKey)) {
