@@ -1,5 +1,6 @@
 package org.accompany.backendchatbot.domain.chat.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.accompany.backendchatbot.domain.chat.client.AiClient;
@@ -20,6 +21,7 @@ public class ChatServiceImpl implements ChatService {
 
     private final AiClient aiClient;
     private final ChatPromptBuilder chatPromptBuilder;
+    private final ObjectMapper objectMapper;
 
     @Override
     public ChatRes chat(AiChatReq request) {
@@ -58,7 +60,7 @@ public class ChatServiceImpl implements ChatService {
 
                 for (String token : aiClient.stream(systemPrompt, userPrompt).toIterable()) {
                     tokenCount.incrementAndGet();
-                    emitter.send(SseEmitter.event().data(token));
+                    emitter.send(SseEmitter.event().data(objectMapper.writeValueAsString(token)));
                 }
 
                 log.info("[Chat:SSE] 스트리밍 정상 완료 - requestId={}, tokenCount={}",
