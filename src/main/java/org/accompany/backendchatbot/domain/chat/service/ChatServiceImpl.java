@@ -45,7 +45,7 @@ public class ChatServiceImpl implements ChatService {
 
     @Override
     public SseEmitter streamChat(AiChatReq request) {
-        SseEmitter emitter = new SseEmitter(60_000L);
+        SseEmitter emitter = new SseEmitter(120_000L);
         String requestId = UUID.randomUUID().toString().substring(0, 8);
 
         log.info("[Chat:SSE] 스트리밍 요청 시작 - requestId={}, userId={}",
