@@ -25,7 +25,7 @@ public class AiConfig {
                     .build();
 
             JdkClientHttpRequestFactory requestFactory = new JdkClientHttpRequestFactory(httpClient);
-            requestFactory.setReadTimeout(Duration.ofSeconds(60));
+            requestFactory.setReadTimeout(Duration.ofSeconds(120));
 
             builder.requestFactory(requestFactory);
         };

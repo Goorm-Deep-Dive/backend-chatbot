@@ -30,6 +30,7 @@ public class SecurityConfig {
                         .requestMatchers("/actuator/health").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/chats/messages").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/chats/messages/stream").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/admin/documents").permitAll()
                         .anyRequest().denyAll()
                 )
                 .addFilterBefore(internalApiKeyFilter, UsernamePasswordAuthenticationFilter.class)
