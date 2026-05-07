@@ -60,6 +60,9 @@ pipeline {
                                         docker run -d \
                                           --name chatbot-app \
                                           --restart unless-stopped \
+                                          --log-driver json-file \
+                                          --log-opt max-size=50m \
+                                          --log-opt max-file=5 \
                                           -p 8082:8082 \
                                           -v /home/ubuntu/chatbot/application.yml:/app/application.yml:ro \
                                           chatbot-app:latest \
