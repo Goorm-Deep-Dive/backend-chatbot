@@ -44,8 +44,8 @@ pipeline {
                             configName: 'chatbot-ec2',
                             transfers: [
                                 sshTransfer(
-                                    sourceFiles: 'Dockerfile,build.gradle,settings.gradle,gradlew,gradle/**,src/**,application.yml',
-                                    removePrefix: '',
+                                    sourceFiles: 'Dockerfile,build/libs/*.jar,application.yml',
+                                    removePrefix: 'build/libs',
                                     remoteDirectory: 'chatbot',
                                     execCommand: '''
                                         cd /home/ubuntu/chatbot
