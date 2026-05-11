@@ -44,7 +44,12 @@ pipeline {
                             configName: 'chatbot-ec2',
                             transfers: [
                                 sshTransfer(
-                                    sourceFiles: 'Dockerfile,build/libs/*.jar,application.yml',
+                                    sourceFiles: 'Dockerfile,application.yml',
+                                    removePrefix: '',
+                                    remoteDirectory: 'chatbot'
+                                ),
+                                sshTransfer(
+                                    sourceFiles: 'build/libs/*.jar',
                                     removePrefix: 'build/libs',
                                     remoteDirectory: 'chatbot',
                                     execCommand: '''
