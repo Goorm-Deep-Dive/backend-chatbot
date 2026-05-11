@@ -29,7 +29,7 @@ public class ChatServiceImpl implements ChatService {
                 request.userId()
         );
 
-        String systemPrompt = chatPromptBuilder.buildSystemPrompt(request);
+        String systemPrompt = chatPromptBuilder.buildSystemPrompt();
         String userPrompt = chatPromptBuilder.buildUserPrompt(request);
         String answer = aiClient.ask(systemPrompt, userPrompt);
 
@@ -55,7 +55,7 @@ public class ChatServiceImpl implements ChatService {
             AtomicInteger tokenCount = new AtomicInteger();
 
             try {
-                String systemPrompt = chatPromptBuilder.buildSystemPrompt(request);
+                String systemPrompt = chatPromptBuilder.buildSystemPrompt();
                 String userPrompt = chatPromptBuilder.buildUserPrompt(request);
 
                 for (String token : aiClient.stream(systemPrompt, userPrompt).toIterable()) {
