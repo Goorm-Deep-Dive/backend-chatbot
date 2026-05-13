@@ -119,25 +119,29 @@ public class ChatPromptBuilder {
      */
     private void appendRelevantDocs(StringBuilder prompt, String message) {
 
-        List<Document> docs = vectorStore.similaritySearch(
-                SearchRequest.builder()
-                        .query(message)
-                        .topK(3) // 유사한 문서 개수
-                        .similarityThreshold(0.5) // 유사도
-                        .build()
-        );
+        try {
+            List<Document> docs = vectorStore.similaritySearch(
+                    SearchRequest.builder()
+                            .query(message)
+                            .topK(3) // 유사한 문서 개수
+                            .similarityThreshold(0.5) // 유사도
+                            .build()
+            );
 
-        log.info("[RAG] 검색 결과 - query={}, docs={}", message, docs.size());
+            log.info("[RAG] 검색 결과 - query={}, docs={}", message, docs.size());
 
-        if(docs.isEmpty()) {
-            return;
+            if (docs.isEmpty()) {
+                return;
+            }
+
+            prompt.append("\n[참고문서]\n");
+            docs.forEach(doc -> {
+                prompt.append(doc.getText())
+                        .append("\n---\n");
+            });
+        } catch (Exception e) {
+            log.warn("[RAG] 임베딩 실패, 관련 문서 없이 진행", e);
         }
-
-        prompt.append("\n[참고문서]\n");
-        docs.forEach(doc -> {
-            prompt.append(doc.getText())
-                    .append("\n---\n");
-        });
     }
 
     /**
