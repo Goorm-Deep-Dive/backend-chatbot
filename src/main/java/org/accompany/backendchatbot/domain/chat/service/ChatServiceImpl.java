@@ -83,6 +83,7 @@ public class ChatServiceImpl implements ChatService {
         emitter.onTimeout(() -> {
             log.warn("[Chat:SSE] 타임아웃 발생 - requestId={}, userId={}",
                     requestId, request.userId());
+
             emitter.complete();
         });
 
