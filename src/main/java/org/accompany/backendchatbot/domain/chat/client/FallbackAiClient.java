@@ -43,13 +43,19 @@ public class FallbackAiClient implements AiClient {
 
         for(AiClient client : clients) {
             try {
-                return client.ask(systemPrompt, userMessage);
+                String answer = client.ask(systemPrompt, userMessage);
+                if (answer != null && !answer.isBlank()) {
+                    return answer;
+                }
+                log.warn("[Fallback] {} 빈 응답 → 다음 클라이언트로 전환",
+                        client.getClass().getSimpleName());
             } catch (RuntimeException e) {
                 log.warn("[Fallback] {} 실패 → 다음 클라이언트로 전환", client.getClass().getSimpleName(), e);
                 last = e;
             }
         }
-        throw last;
+        if (last != null) throw last;
+        throw new IllegalStateException("[Fallback] 모든 AI 클라이언트 빈 응답");
     }
 
     @Override
@@ -69,7 +75,10 @@ public class FallbackAiClient implements AiClient {
                 return next.stream(systemPrompt, userMessage)
                         .doOnSubscribe(s ->
                                 log.info("[Fallback] {} 스트리밍 시도", next.getClass().getSimpleName()));
-            });
+            }).switchIfEmpty(Flux.defer(() -> {
+                log.warn("[Fallback] 스트리밍 빈 응답 → 다음 클라이언트로 전환");
+                return next.stream(systemPrompt, userMessage);
+            }));
         }
 
         return result;
