@@ -204,8 +204,8 @@ public class ChatPromptBuilder {
             List<Document> docs = vectorStore.similaritySearch(
                     SearchRequest.builder()
                             .query(message)
-                            .topK(3) // 유사한 문서 개수
-                            .similarityThreshold(0.5) // 유사도
+                            .topK(4) // 유사한 문서 개수
+                            .similarityThreshold(0.4) // 유사도
                             .build()
             );
 
