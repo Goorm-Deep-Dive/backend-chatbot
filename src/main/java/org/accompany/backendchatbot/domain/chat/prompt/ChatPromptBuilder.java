@@ -123,10 +123,10 @@ public class ChatPromptBuilder {
         AiChecklistSummary summary = context.checklistSummary();
 
         boolean hasSummary = summary != null &&
-                (summary.notCompletedWithDeadline() != null && !summary.notCompletedWithDeadline().isEmpty() ||
-                        summary.notCompletedUrgent() != null && !summary.notCompletedUrgent().isEmpty() ||
-                        summary.notCompletedNoDueDate() != null && !summary.notCompletedNoDueDate().isEmpty() ||
-                        summary.completed() != null && !summary.completed().isEmpty());
+                (hasItems(summary.notCompletedWithDeadline()) ||
+                        hasItems(summary.notCompletedUrgent()) ||
+                        hasItems(summary.notCompletedNoDueDate()) ||
+                        hasItems(summary.completed()));
 
         if (context.dateOfDeath() == null && !hasSummary) return;
 
@@ -143,44 +143,22 @@ public class ChatPromptBuilder {
         appendIfPresent(prompt, "date_of_death", context.dateOfDeath());
 
         if (summary != null) {
-            summary.notCompletedUrgent().forEach(name ->
-                    appendChecklistItem(
-                            prompt,
-                            name,
-                            "NOT_COMPLETED",
-                            "IMMEDIATE",
-                            null
-                    )
+            safeList(summary.notCompletedUrgent()).forEach(name ->
+                    appendChecklistItem(prompt, name, "NOT_COMPLETED", "IMMEDIATE", null)
             );
 
-            summary.notCompletedNoDueDate().forEach(name ->
-                    appendChecklistItem(
-                            prompt,
-                            name,
-                            "NOT_COMPLETED",
-                            "RECOMMENDED",
-                            null
-                    )
+            safeList(summary.notCompletedNoDueDate()).forEach(name ->
+                    appendChecklistItem(prompt, name, "NOT_COMPLETED", "RECOMMENDED", null)
             );
 
-            summary.notCompletedWithDeadline().forEach(item ->
-                    appendChecklistItem(
-                            prompt,
-                            item.name(),
-                            "NOT_COMPLETED",
-                            "DUE_DATE",
-                            item.dueDate()
-                    )
-            );
+            safeList(summary.notCompletedWithDeadline()).forEach(item -> {
+                if (item != null) {
+                    appendChecklistItem(prompt, item.name(), "NOT_COMPLETED", "DUE_DATE", item.dueDate());
+                }
+            });
 
-            summary.completed().forEach(name ->
-                    appendChecklistItem(
-                            prompt,
-                            name,
-                            "COMPLETED",
-                            null,
-                            null
-                    )
+            safeList(summary.completed()).forEach(name ->
+                    appendChecklistItem(prompt, name, "COMPLETED", null, null)
             );
         }
 
@@ -319,6 +297,14 @@ public class ChatPromptBuilder {
         }
 
         return escapeXml(trimmed);
+    }
+
+    private <T> List<T> safeList(List<T> list) {
+        return list == null ? List.of() : list;
+    }
+
+    private boolean hasItems(List<?> list) {
+        return list != null && !list.isEmpty();
     }
 
     private String sanitizePromptText(String text) {
