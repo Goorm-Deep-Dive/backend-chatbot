@@ -94,7 +94,7 @@ public class ChatPromptBuilder {
         <user_question>
         """);
 
-        prompt.append(safeText(request.message()));
+        prompt.append(sanitizeUserInput(request.message()));
 
         prompt.append("""
         
@@ -164,7 +164,7 @@ public class ChatPromptBuilder {
                         .append("<message role=\"")
                         .append(normalizeRole(message.role()))
                         .append("\">\n")
-                        .append(safeText(message.content()))
+                        .append(sanitizePromptText(message.content()))
                         .append("\n</message>\n"));
 
         prompt.append("</conversation_history>\n");
@@ -201,7 +201,7 @@ public class ChatPromptBuilder {
 
             docs.forEach(doc -> {
                 prompt.append("<document>\n")
-                        .append(safeText(doc.getText()))
+                        .append(sanitizePromptText(doc.getText()))
                         .append("\n</document>\n");
             });
 
@@ -265,7 +265,7 @@ public class ChatPromptBuilder {
         };
     }
 
-    private String safeText(String text) {
+    private String sanitizeUserInput(String text) {
         if (text == null) return "";
 
         String trimmed = text.trim();
@@ -276,6 +276,11 @@ public class ChatPromptBuilder {
         }
 
         return escapeXml(trimmed);
+    }
+
+    private String sanitizePromptText(String text) {
+        if (text == null) return "";
+        return escapeXml(text.trim());
     }
 
     private String escapeXml(String s) {
