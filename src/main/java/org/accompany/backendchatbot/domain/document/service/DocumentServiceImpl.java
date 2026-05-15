@@ -11,6 +11,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -48,6 +49,7 @@ public class DocumentServiceImpl implements DocumentService {
                     doc.getMetadata().put("filename", filename);
                     doc.getMetadata().put("source_type", "uploaded_file");
                     doc.getMetadata().put("content_type", file.getContentType());
+                    doc.getMetadata().put("uploaded_at", LocalDateTime.now().toString());
 
                     return new Document(
                             cleanText(doc.getText()),

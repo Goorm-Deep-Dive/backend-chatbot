@@ -31,6 +31,7 @@ public class InternalApiKeyFilter extends OncePerRequestFilter {
         String path = request.getRequestURI();
 
         return path.startsWith("/actuator/health")
+                || "OPTIONS".equalsIgnoreCase(request.getMethod())
                 || request.getDispatcherType() == DispatcherType.ASYNC
                 || request.getDispatcherType() == DispatcherType.ERROR;
     }
