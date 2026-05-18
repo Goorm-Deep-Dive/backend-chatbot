@@ -32,20 +32,25 @@ public class DocumentServiceImpl implements DocumentService {
             .build();
 
     @Override
-    public void ingestDocuments(List<MultipartFile> files) {
-        files.forEach(this::ingestDocument);
+    public void ingestDocuments(List<MultipartFile> files, List<String> titles) {
+        for (int i = 0; i < files.size(); i++) {
+            String title = (titles != null && i < titles.size()) ? titles.get(i) : null;
+            ingestDocument(files.get(i), title);
+        }
     }
 
     /**
      * 파일을 파싱하고, 텍스트 정제 -> 청킹 -> 짧은 청크 병합 -> 유효성 검사 후 벡터 저장소에 저장
      */
     @Override
-    public void ingestDocument(MultipartFile file) {
+    public void ingestDocument(MultipartFile file, String title) {
         String filename = file.getOriginalFilename();
+        String displayTitle = (title != null && !title.isBlank()) ? title : stripExtension(filename);
         log.info("[Document] 문서 적재 시작 - filename={}", filename);
 
         List<Document> documents = parseDocument(file).stream()
                 .map(doc -> {
+                    doc.getMetadata().put("source_title", displayTitle);
                     doc.getMetadata().put("filename", filename);
                     doc.getMetadata().put("source_type", "uploaded_file");
                     doc.getMetadata().put("content_type", file.getContentType());
@@ -68,9 +73,9 @@ public class DocumentServiceImpl implements DocumentService {
         List<Document> chunks = mergedChunks.stream()
                 .filter(doc -> isValidChunk(doc.getText()))
                 .map(doc -> {
-                    String sourceFilename = (String) doc.getMetadata().getOrDefault("filename", "");
+                    String sourceTitle = (String) doc.getMetadata().getOrDefault("source_title", "");
                     return new Document(
-                            "[문서: " + sourceFilename + "]\n" + doc.getText(),
+                            "[문서: " + sourceTitle + "]\n" + doc.getText(),
                             doc.getMetadata()
                     );
                 })
@@ -199,5 +204,11 @@ public class DocumentServiceImpl implements DocumentService {
         if (specialRatio > 0.4) return false;
 
         return true;
+    }
+
+    private String stripExtension(String filename) {
+        if (filename == null) return "";
+        int dot = filename.lastIndexOf('.');
+        return dot > 0 ? filename.substring(0, dot) : filename;
     }
 }
