@@ -5,10 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.accompany.backendchatbot.domain.document.service.DocumentService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -29,14 +26,15 @@ public class DocumentController {
     );
 
     @PostMapping
-    public ResponseEntity<Void> uploadDocument(@RequestParam("files") List<MultipartFile> files) {
+    public ResponseEntity<Void> uploadDocument(@RequestParam("files") List<MultipartFile> files,
+                                               @RequestPart(required = false) List<String> titles) {
         for (MultipartFile file : files) {
             if (!ALLOWED_TYPES.contains(file.getContentType())) {
                 throw new IllegalArgumentException("지원하지 않는 파일 형식입니다: " + file.getContentType());
             }
         }
 
-        documentService.ingestDocuments(files);
+        documentService.ingestDocuments(files, titles);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 }

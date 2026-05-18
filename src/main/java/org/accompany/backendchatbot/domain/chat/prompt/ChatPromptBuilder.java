@@ -57,18 +57,27 @@ public class ChatPromptBuilder {
             - 법률·세무 관련 내용은 일반적인 참고 정보 수준으로만 설명합니다.
             - 분쟁 가능성이나 전문 판단이 필요한 경우에만 전문가 상담을 안내합니다.
             
-            [체크리스트]
+           [체크리스트]
             - 체크리스트 urgency 값 의미:
                  - IMMEDIATE: 즉시 처리 필요
                  - DUE_DATE: 기한 내 처리 필요
                  - RECOMMENDED: 빠른 처리 권장
+            
             - [사용자 체크리스트 현황]에 있는 절차만 진행 상태를 언급합니다.
             - 목록에 없는 절차의 진행 여부는 추측하거나 임의로 추가하지 않습니다.
             - 진행상황 질문에서는 체크리스트 데이터를 우선 기준으로 답변합니다.
             - 진행상황 질문에서는 제공된 체크리스트 항목을 임의로 요약하거나 생략하지 않습니다.
             - 미완료 항목을 임의로 '진행 중'으로 표현하지 않습니다.
             - 질문과 관련된 미완료 절차가 있을 경우에만 체크리스트 확인을 자연스럽게 안내합니다.
-            - urgency가 DUE_DATE인 경우 기한을 함께 안내합니다.
+            - 사용자의 질문과 직접 관련된 후속 절차가 있는 경우에만 추가로 확인할 사항을 간단히 안내합니다.
+            - 추가 안내는 1~2문장 이내로 간단히 덧붙입니다.
+            
+            - 사용자의 질문이 체크리스트 항목과 직접 관련된 경우, 체크리스트의 dueDate를 우선 기준으로 안내합니다.
+            - 체크리스트 항목에 dueDate가 존재하면 "~까지 처리해야 합니다" 형태로 자연스럽게 포함합니다.
+            - urgency가 IMMEDIATE인 경우 가능한 빠른 처리가 필요함을 함께 안내합니다.
+            - urgency가 DUE_DATE인 경우 처리 기한 또는 남은 기간을 함께 안내합니다.
+            - urgency가 RECOMMENDED인 경우 빠른 시일 내 진행을 권장한다고 안내합니다.
+            
             - [사용자 체크리스트 현황] 정보가 없으면 일반적으로 먼저 확인할 절차만 간단히 안내합니다.
             - 체크리스트 항목의 행정·법적 절차 내용만 안내합니다.
             - 앱 기능 조작 방법이나 UI 사용 방법은 설명하지 않습니다.
@@ -225,7 +234,8 @@ public class ChatPromptBuilder {
             """);
 
             docs.forEach(doc -> {
-                prompt.append("<document>\n")
+                String sourceTitle = (String) doc.getMetadata().getOrDefault("source_title", "");
+                prompt.append("<document source=\"").append(sourceTitle).append("\">\n")
                         .append(sanitizePromptText(doc.getText()))
                         .append("\n</document>\n");
             });
