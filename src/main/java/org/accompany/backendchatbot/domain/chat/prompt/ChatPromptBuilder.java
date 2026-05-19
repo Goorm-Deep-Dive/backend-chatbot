@@ -245,33 +245,37 @@ public class ChatPromptBuilder {
             docs.forEach(doc -> {
                 String sourceTitle = (String) doc.getMetadata().getOrDefault("source_title", "");
 
-                if (sourceTitle != null) {
+                if (sourceTitle != null && !sourceTitle.isBlank()) {
                     String normalizedSource =
                             Normalizer.normalize(sourceTitle, Normalizer.Form.NFC);
 
                     sources.add(normalizedSource);
                 }
 
-                prompt.append("<document source=\"").append(sourceTitle).append("\">\n")
+                prompt.append("<document source=\"")
+                        .append(sourceTitle)
+                        .append("\">\n")
                         .append(sanitizePromptText(doc.getText()))
                         .append("\n</document>\n");
             });
 
             prompt.append("</reference_documents>\n");
 
-            prompt.append("""
-            <reference_sources>
-            """);
+            if (!sources.isEmpty()) {
+                prompt.append("""
+                <reference_sources>
+                """);
 
-            sources.forEach(source ->
-                    prompt.append("<source>")
-                            .append(escapeXml(source))
-                            .append("</source>\n")
-            );
+                sources.forEach(source ->
+                        prompt.append("<source>")
+                                .append(escapeXml(source))
+                                .append("</source>\n")
+                );
 
-            prompt.append("""
-            </reference_sources>
-            """);
+                prompt.append("""
+                </reference_sources>
+                """);
+                    }
         } catch (Exception e) {
             log.warn("[RAG] 임베딩 실패, 관련 문서 없이 진행", e);
         }
