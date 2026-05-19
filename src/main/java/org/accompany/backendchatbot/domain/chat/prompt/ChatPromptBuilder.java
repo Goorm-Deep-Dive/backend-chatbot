@@ -58,7 +58,7 @@ public class ChatPromptBuilder {
             - 참고문서에 없는 내용은 추측하거나 단정하지 않습니다.
             - 일반적인 설명이 필요한 경우에만 간단히 덧붙이며, 참고문서 내용과 충돌해서는 안 됩니다.
             - <reference_sources>가 제공되면 답변 마지막에 반드시 [출처]를 작성합니다.
-            - [출처]에는 <reference_sources>의 값을 중복 없이 그대로 나열합니다.
+            - [출처]에는 <reference_sources>의 <source> 값을 중복 없이 그대로 나열합니다.
             - [출처] 이후에는 추가 문장을 작성하지 않습니다.
             - [참고문서]가 없으면 확인 가능한 절차만 안내합니다.
             - 분쟁 가능성이나 전문 판단이 필요한 경우에만 전문가 상담을 안내합니다.
@@ -240,12 +240,16 @@ public class ChatPromptBuilder {
             
             <reference_documents>
             """);
+            Set<String> sources = new LinkedHashSet<>();
 
             docs.forEach(doc -> {
                 String sourceTitle = (String) doc.getMetadata().getOrDefault("source_title", "");
 
                 if (sourceTitle != null) {
-                    sourceTitle = Normalizer.normalize(sourceTitle, Normalizer.Form.NFC);
+                    String normalizedSource =
+                            Normalizer.normalize(sourceTitle, Normalizer.Form.NFC);
+
+                    sources.add(normalizedSource);
                 }
 
                 prompt.append("<document source=\"").append(sourceTitle).append("\">\n")
@@ -255,24 +259,15 @@ public class ChatPromptBuilder {
 
             prompt.append("</reference_documents>\n");
 
-            Set<String> sources = new LinkedHashSet<>();
-
-            docs.forEach(doc -> {
-                String sourceTitle = (String) doc.getMetadata()
-                        .getOrDefault("source_title", "");
-
-                if (sourceTitle != null && !sourceTitle.isBlank()) {
-                    sources.add(sourceTitle);
-                }
-            });
-
             prompt.append("""
             <reference_sources>
             """);
 
-            sources.forEach(doc -> {
-                prompt.append("- ").append(sources).append("\n");
-            });
+            sources.forEach(source ->
+                    prompt.append("<source>")
+                            .append(escapeXml(source))
+                            .append("</source>\n")
+            );
 
             prompt.append("""
             </reference_sources>
