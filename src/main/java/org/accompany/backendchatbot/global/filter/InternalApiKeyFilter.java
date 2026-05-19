@@ -30,7 +30,7 @@ public class InternalApiKeyFilter extends OncePerRequestFilter {
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getRequestURI();
 
-        return path.startsWith("/actuator/health")
+        return path.startsWith("/actuator")
                 || "OPTIONS".equalsIgnoreCase(request.getMethod())
                 || request.getDispatcherType() == DispatcherType.ASYNC
                 || request.getDispatcherType() == DispatcherType.ERROR;
