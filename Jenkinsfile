@@ -70,6 +70,7 @@ pipeline {
                                           --log-opt max-file=5 \
                                           -p 8082:8082 \
                                           -v /home/ubuntu/chatbot/application.yml:/app/application.yml:ro \
+                                          -v /home/ubuntu/chatbot/logs:/app/logs \
                                           chatbot-app:latest \
                                           --spring.config.location=file:/app/application.yml
 

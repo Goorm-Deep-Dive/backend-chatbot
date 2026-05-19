@@ -1,0 +1,56 @@
+spring:
+  application:
+    name: backend-chatbot
+
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY}
+      chat:
+        options:
+          model: ${OPENAI_MODEL:gpt-4.1-mini}
+      embedding:
+        options:
+          model: ${OPENAI_EMBEDDING_MODEL:text-embedding-3-small}
+
+    google:
+      genai:
+        api-key: ${GOOGLE_API_KEY}
+        chat:
+          options:
+            model: ${GOOGLE_MODEL:gemini-2.5-flash}
+
+    vectorstore:
+      pgvector:
+        initialize-schema: false
+        dimensions: 1536
+        schema-name: ending_schema
+
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
+
+server:
+  port: 8082
+
+app:
+  ai:
+    providers: ${AI_PROVIDERS:openai,gemini}
+
+internal:
+  api-key: ${INTERNAL_API_KEY}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  tracing:
+    sampling:
+      probability: 0.1
