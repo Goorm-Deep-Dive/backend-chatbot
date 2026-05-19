@@ -1,8 +1,6 @@
 # 동행 AI Chatbot
 
-공식 문서와 사용자 상황을 기반으로  
-사망 이후 절차를 안내하는  
-RAG 기반 AI 챗봇 서버
+- 공식 문서와 사용자 상황을 기반으로 사망 이후 절차를 안내하는 RAG 기반 AI 챗봇 서버
 
 ![Java](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white)
 ![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.x-6DB33F?logo=springboot&logoColor=white)
@@ -14,13 +12,9 @@ RAG 기반 AI 챗봇 서버
 
 # 1. Project Overview
 
-동행 AI Chatbot은  
-사망 이후 유족이 처리해야 하는 절차를  
-공식 문서 기반으로 안내하는 AI 챗봇 서버입니다.
+- 동행 AI Chatbot은 사망 이후 유족이 처리해야 하는 절차를 공식 문서 기반으로 안내하는 AI 챗봇 서버입니다.
 
-공공기관 문서 검색 결과와  
-사용자 체크리스트 정보를 함께 반영하여  
-출처 기반의 개인화된 답변을 제공합니다.
+- 공공기관 문서 검색 결과와 사용자 체크리스트 정보를 함께 반영하여 출처 기반의 개인화된 답변을 제공합니다.
 
 ---
 
