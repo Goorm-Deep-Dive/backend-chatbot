@@ -2,15 +2,16 @@
 
 - 공식 문서와 사용자 상황을 기반으로 사망 이후 절차를 안내하는 RAG 기반 AI 챗봇 서버
 
-![Java](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white)
-![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.x-6DB33F?logo=springboot&logoColor=white)
-![Spring AI](https://img.shields.io/badge/Spring_AI-RAG-4285F4?logo=spring&logoColor=white)
+![Java](https://img.shields.io/badge/Java_21-ED8B00?logo=openjdk&logoColor=white)
+![Spring Boot](https://img.shields.io/badge/Spring_Boot_3.5-6DB33F?logo=springboot&logoColor=white)
 ![Spring Security](https://img.shields.io/badge/Spring_Security-6DB33F?logo=springsecurity&logoColor=white)
+![Spring AI](https://img.shields.io/badge/Spring_AI-6DB33F?logo=spring&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?logo=postgresql&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white)
 ![AWS](https://img.shields.io/badge/AWS_EC2-FF9900?logo=amazonec2&logoColor=white)
+![pgvector](https://img.shields.io/badge/pgvector-4169E1?logo=postgresql&logoColor=white)
 
-# 1. Project Overview
+## 1. Project Overview
 
 - 동행 AI Chatbot은 사망 이후 유족이 처리해야 하는 절차를 공식 문서 기반으로 안내하는 AI 챗봇 서버입니다.
 
@@ -18,7 +19,7 @@
 
 ---
 
-# 2. Features
+## 2. Features
 
 | 기능 | 설명 |
 |---|---|
@@ -28,10 +29,10 @@
 | Prompt Injection 방어 | 사용자 입력과 참고문서를 명령이 아닌 데이터로 처리 |
 | SSE 스트리밍 | AI 응답을 실시간으로 스트리밍 |
 | Virtual Thread 적용 | 동시 스트리밍 요청 처리 안정성 개선 |
-
+| Fallback 응답 | AI 응답 실패 시 기본 안내 메시지를 반환하여 서비스 중단 방지 |
 ---
 
-# 3. AI Response Pipeline
+## 3. AI Response Pipeline
 
 ```text
 사용자 질문
@@ -52,33 +53,39 @@ LLM 응답 생성
         ↓
 출처 기반 개인화 응답 반환
 ```
+---
+## 4. Fallback Handling
+- AI 응답 생성 실패 시 Retry 기반 재시도 수행
+- 스트리밍 및 모델 호출 예외 로그를 기록하여 장애 추적 가능하도록 구성
+- OpenAI API 장애 발생 시 Gemini 모델로 Fallback 처리
+- Main Server에서 기본 안내 메시지를 반환하여 서비스 중단 방지
 
 ---
 
-# 4. RAG Pipeline
+## 5. RAG Pipeline
 
-## 4.1 Document Retrieval
+### 5.1 Document Retrieval
 - 공공기관 PDF 문서 기반 벡터 검색
 - Cosine Similarity 기반 유사 문서 탐색
 - Top-K 기반 관련 문서 검색
 
 
-## 4.2 Chunking Strategy
+### 5.2 Chunking Strategy
 - Chunk Size 500 기반 문서 청킹
 - 행정 · 법률 문서의 문맥 유지 고려
 - Garbage Chunk Filtering 기반 불필요한 텍스트 제거
 
 
-## 4.3 Source Management
+### 5.3 Source Management
 - 문서 단위 Source 메타데이터 관리
 - 출처 기반 응답 생성
 - Reference Source 정규화 및 중복 제거
 
 ---
 
-# 5. Prompt Engineering
+## 6. Prompt Engineering
 
-## System Prompt
+### System Prompt
 - 답변 범위 제한
 - 답변 톤 및 출력 형식 제어
 - 참고문서 기반 응답 정책
@@ -86,11 +93,10 @@ LLM 응답 생성
 - Prompt Injection 방어 규칙 적용
 
 
-## User Prompt
-XML 기반으로 Context를 구조화하여  
-LLM이 각 데이터를 명확히 구분하도록 구성
+### User Prompt
+- XML 기반으로 Context를 구조화하여 LLM이 각 데이터를 명확히 구분하도록 구성
 
-### 포함 정보
+#### 포함 정보
 - 사용자 질문
 - 사용자 체크리스트 현황
 - 이전 대화 내역
@@ -99,24 +105,24 @@ LLM이 각 데이터를 명확히 구분하도록 구성
 
 ---
 
-# 6. Run
+## 7. Run
 
-## Prerequisites
+### Prerequisites
 
 - PostgreSQL 실행 필요
 - OpenAI 또는 Google API Key 필요
 
-## Configuration
+### Configuration
 
 `application-example.yml`을 참고하여  
 `src/main/resources/application.yml` 파일을 생성합니다.
 
-## Local Run
+### Local Run
 ```
 ./gradlew bootRun
 ```
 
-## Docker Run
+### Docker Run
 ```
 ./gradlew build -x test
 
@@ -129,15 +135,15 @@ docker run -d \
 ```
 
 
-# 7. Example
+## 8. Example
 
-## 질문
+### 질문
 
 ```text
 사망신고는 어떻게 하나요?
 ```
 
-## 답변
+### 답변
 
 ```text
 사망신고는 사망 사실을 알게 된 날부터  
